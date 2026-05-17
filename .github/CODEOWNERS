@@ -1,0 +1,4 @@
+# @zob456 is the default code owner for everything in this repo.
+# The repo lives under the `zobstory` org; without this mapping no
+# individual is recognized as code owner on file pages or PRs.
+*       @zob456
