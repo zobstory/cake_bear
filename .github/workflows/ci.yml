@@ -13,6 +13,7 @@ name: ci
 #          -F 'required_status_checks[contexts][]=coverage (≥ 70%, goal 80%)' \
 #          -F 'enforce_admins=true' \
 #          -F 'required_pull_request_reviews[required_approving_review_count]=1' \
+#          -F 'required_pull_request_reviews[require_code_owner_reviews]=true' \
 #          -F 'restrictions=' --input -
 #      (Or set it from the UI: Settings → Branches → Add branch protection rule.)
 # -----------------------------------------------------------------------------
