@@ -1,22 +1,75 @@
 # cake_bear
 
-### Overview
-I have been thinking about overcoming the barrier for allowing more diverse candidates to get into the development field much faster. Though JavaScript / Type Script is more & more popular in back-end development & is the first / easiet language to learn, it is not as perfomant as Go or Rust & doesn't help the developer naturally learn the lower-level development techniques. Rust & Go also have a very steep larning curve & are getting more & more popular due to their perfoamnce. They also pay more generally. 
+A Rust-implemented compiler for **TypeScript** that produces a single native binary.
 
-cakebear, like many new attempts at languages may not ever reach mass adoption but it will hopefully provide ideas around features that TypeScript / JavaScript can add like a compiled version. If this project fails but moves the needle on increasing the accessability of the tech field to diverse candidates then it will be a success!
+> **Status:** Phase 1 (alpha). The compiler pipeline is being built phase by phase. The `cakec` CLI prints help today; `cakec build` is being wired in. See [`CLAUDE.md`](CLAUDE.md) for the language subset supported by the current phase.
 
-My first attempt at decreasing the barrier of entry for more diverse candidaets is to take an easy-to-learn / much more widely known language like TypeScript & create a way to compile it down to a singel executable & get it close to or as performant as Go or Rust. This will allow companies to adopt this language as a way to get more diverse candidates with less experience & knowledge without sacrificing performance or ease of deployment.
+## Why
 
-### cakebear as a language
-* Performance should be close to or as good as Go & Rust
-* Fully support & keep up with TypeScript
-* WON'T support TypeScript. All types will be the default types from JavaScript to make this more accessible to first-time / brand new developers
-  * types are `string` & `float64` by default in JavaScript
-* Have very strong & easy-to-understand documentation with examples
+TypeScript is one of the easiest mainstream languages to pick up and one of the most widely known. Rust and Go offer dramatically better runtime performance and a much simpler deployment story (one statically-linked binary, no runtime install). `cake_bear` aims to give TypeScript developers that same deployment and performance story without forcing them to learn a second language.
 
-### Princeples of cakebear
-* Be as performant as possible without sacrificing accessibility
-* Follow the package management of Go or Rust by requiring approval by the cakebear org (currently know as the cakebear cave as a placeholder) before being added to the platform
-* Avoid the bloat of NPM
-* Have an officially supported web framework
- * Top 2 titles right now for framework are `frosting` & `honey`
+## Project goals
+
+- **Source language:** full TypeScript, rolled out in phases.
+- **Output:** a single native binary per program (no Node, no V8, no bundler).
+- **Codegen backend:** [Cranelift](https://cranelift.dev/).
+- **Concurrency:** familiar JS `async`/`await`, backed by an M:N work-stealing runtime — no new keywords to learn.
+- **Performance target:** in the ballpark of Go/Rust.
+- **Package management:** designed to avoid NPM-style ecosystem bloat. Details TBD in a later phase.
+
+## Repo layout
+
+```
+cake_bear/
+├── crates/                # the compiler workspace
+│   ├── cakec-cli/         # `cakec` binary
+│   ├── cakec-ast/         # AST nodes
+│   ├── cakec-lexer/       # tokenizer
+│   ├── cakec-parser/      # tokens → AST
+│   ├── cakec-sema/        # name resolution + type checking
+│   ├── cakec-ir/          # lowered SSA-ish IR
+│   ├── cakec-codegen/     # Cranelift backend
+│   └── cakec-runtime/     # linked into every compiled binary
+└── examples/
+    └── basic/
+        └── main.ts        # smallest cakebear program
+```
+
+## Build the compiler
+
+```sh
+# One-time, if your local rustup is stale:
+rustup update
+
+cargo build --workspace --release
+```
+
+The resulting `cakec` binary lives at `target/release/cakec`.
+
+## Compile the example
+
+```sh
+# From the repo root:
+cargo run -p cakec-cli --release -- build examples/basic/main.ts
+./examples/basic/bin/main
+# 5
+```
+
+By convention, `cakec build <file>` writes the produced binary to `<project-root>/bin/<name>` — for `examples/basic/main.ts`, that's `examples/basic/bin/main`. Pass `-o <path>` to override the destination.
+
+## Current phase scope
+
+Phase 1 covers:
+
+- Primitive types: `number`, `string`, `boolean`, `null`, `undefined`
+- `const` / `let` with explicit type annotations
+- Function declarations with typed parameters and return types
+- Arithmetic, string concatenation with `+`, boolean operators
+- `if` / `else` / `while` / `return`
+- `console.log` on a primitive argument
+
+Everything else — modules, classes, generics, `async`/`await`, arrays, the GC — lands in subsequent phases. See `CLAUDE.md` for the live phase definition.
+
+## License
+
+MIT — see [`LICENSE`](LICENSE).
